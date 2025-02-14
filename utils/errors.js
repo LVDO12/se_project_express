@@ -1,6 +1,7 @@
-const BadRequestError = require('./errors/BadRequest');
-const NotFoundError = require('./errors/NotFound');
-const InternalServerError = require('./errors/InternalServer');
+const BadRequestError = require('./errors/BadRequestError');
+const NotFoundError = require('./errors/NotFoundError');
+const InternalServerError = require('./errors/InternalServerError');
+
 
 module.exports = {
   BadRequestError,

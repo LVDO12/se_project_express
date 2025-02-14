@@ -27,7 +27,7 @@ app.use((req, res) => {
   res.status(404).send({ message: "Resource not found" });
 });
 
-app.use((err, req, res) => {
+app.use((err, req, res, _next) => {
   const { statusCode = 500, message } = err;
   res.status(statusCode).send({
     message:
