@@ -27,12 +27,13 @@ app.use((req, res) => {
   res.status(404).send({ message: "Resource not found" });
 });
 
-app.use((err, req, res, _next) => {
+/* eslint-disable no-unused-vars */
+app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   res.status(statusCode).send({
-    message:
-      statusCode === 500 ? "An error has occurred on the server." : message,
+    message: statusCode === 500 ? "An error has occurred on the server." : message,
   });
 });
+/* eslint-enable no-unused-vars */
 
 app.listen(PORT);
