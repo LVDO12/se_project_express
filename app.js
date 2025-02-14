@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+
 const { PORT = 3001 } = process.env;
-const { InternalServerError } = require("./utils/errors");
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use((req, res) => {
   res.status(404).send({ message: "Resource not found" });
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { statusCode = 500, message } = err;
   res.status(statusCode).send({
     message:
@@ -35,6 +35,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT);
