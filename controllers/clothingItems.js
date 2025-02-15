@@ -26,21 +26,6 @@ module.exports.createItem = (req, res, next) => {
     });
 };
 
-module.exports.getItemById = (req, res, next) => {
-  const { itemId } = req.params;
-
-  ClothingItem.findById(itemId)
-    .orFail(() => new NotFoundError("Item not found"))
-    .then((clothingItem) => res.send({ data: clothingItem }))
-    .catch((err) => {
-      if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID."));
-      } else {
-        next(new InternalServerError(err.message));
-      }
-    });
-};
-
 module.exports.deleteItemById = (req, res, next) => {
   const { itemId } = req.params;
 

@@ -5,6 +5,8 @@ const { PORT = 3001 } = process.env;
 
 const app = express();
 
+const{BAD_REQUEST, DEFAULT} = require('./utils/status');
+
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 
 app.use(express.json());
@@ -16,24 +18,20 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
 app.use("/users", require("./routes/users"));
 app.use("/items", require("./routes/clothingItems"));
 
 app.use((req, res) => {
-  res.status(404).send({ message: "Resource not found" });
+  res.status(BAD_REQUEST).send({ message: "Resource not found" });
 });
 
-/* eslint-disable no-unused-vars */
 app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
+  const { statusCode = DEFAULT, message } = err;
   res.status(statusCode).send({
-    message: statusCode === 500 ? "An error has occurred on the server." : message,
+    message: statusCode === DEFAULT ? "An error has occurred on the server." : message,
   });
+  next();
 });
-/* eslint-enable no-unused-vars */
+
 
 app.listen(PORT);
