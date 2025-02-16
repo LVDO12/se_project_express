@@ -5,7 +5,7 @@ const { PORT = 3001 } = process.env;
 
 const app = express();
 
-const{BAD_REQUEST, DEFAULT} = require('./utils/status');
+const{NOT_FOUND, DEFAULT} = require('./utils/status');
 
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 
@@ -22,7 +22,7 @@ app.use("/users", require("./routes/users"));
 app.use("/items", require("./routes/clothingItems"));
 
 app.use((req, res) => {
-  res.status(BAD_REQUEST).send({ message: "Resource not found" });
+  res.status(NOT_FOUND).send({ message: "Resource not found" });
 });
 
 app.use((err, req, res, next) => {
