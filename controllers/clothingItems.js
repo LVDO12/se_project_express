@@ -3,6 +3,7 @@ const {
   BadRequestError,
   NotFoundError,
   InternalServerError,
+  UnauthorizedError,
 } = require("../utils/errors");
 
 module.exports.getItems = (req, res, next) => {
@@ -28,10 +29,23 @@ module.exports.createItem = (req, res, next) => {
 
 module.exports.deleteItemById = (req, res, next) => {
   const { itemId } = req.params;
+  const userId = req.user_id;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail(() => new NotFoundError("Item not found"))
-    .then((clothingItem) => res.send({ data: clothingItem }))
+    .then((clothingItem) => {
+      if (clothingItem.owner.toString() !== userId) {
+        return next(
+          new UnauthorizedError(
+            "You do not have permission to delete this item."
+          )
+        );
+      }
+
+      return ClothingItem.findByIdAndDelete(itemId)
+        .then((deletedItem) => res.send({ data: deletedItem }))
+        .catch((err) => next(new InternalServerError(err.message)));
+    })
     .catch((err) => {
       if (err.name === "CastError") {
         next(new BadRequestError("Invalid ID."));
