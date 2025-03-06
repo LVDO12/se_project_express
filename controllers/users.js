@@ -59,7 +59,7 @@ module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BadRequestError("Email and password are required"));
+    return next(new BadRequestError("Email and password are required."));
   }
 
   return User.findUserByCredentials(email, password)
@@ -71,7 +71,7 @@ module.exports.loginUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof UnauthorizedError) {
-        return next(new UnauthorizedError("Incorrect email or password"));
+        return next(new UnauthorizedError("Incorrect email or password."));
       }
       return next(err);
     });
@@ -79,7 +79,7 @@ module.exports.loginUser = (req, res, next) => {
 
 module.exports.updateProfile = (req, res, next) => {
   const { name, avatar } = req.body;
-  const userId = req.user_id;
+  const userId = req.user._id;
 
   User.findByIdAndUpdate(
     userId,

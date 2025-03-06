@@ -29,7 +29,7 @@ module.exports.createItem = (req, res, next) => {
 
 module.exports.deleteItemById = (req, res, next) => {
   const { itemId } = req.params;
-  const userId = req.user_id;
+  const userId = req.user._id;
 
   ClothingItem.findById(itemId)
     .orFail(() => new NotFoundError("Item not found"))
