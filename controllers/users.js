@@ -6,6 +6,7 @@ const {
   NotFoundError,
   InternalServerError,
   ConflictError,
+  UnauthorizedError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -57,6 +58,10 @@ module.exports.getCurrentUser = (req, res, next) => {
 module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return next(new BadRequestError("Email and password are required"));
+  }
+
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -65,8 +70,10 @@ module.exports.loginUser = (req, res, next) => {
       res.send({ token });
     })
     .catch((err) => {
-      console.log(err);
-      next(err);
+      if (err instanceof UnauthorizedError) {
+        return next(new UnauthorizedError("Incorrect email or password"));
+      }
+      return next(err);
     });
 };
 
@@ -79,7 +86,7 @@ module.exports.updateProfile = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true }
   )
-    .onFail(() => new NotFoundError("User not found."))
+    .orFail(() => new NotFoundError("User not found."))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {

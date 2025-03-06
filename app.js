@@ -8,11 +8,11 @@ const { PORT = 3001 } = process.env;
 const app = express();
 
 const { NOT_FOUND, DEFAULT } = require("./utils/status");
-const{UnauthorizedError} = require('./utils/errors');
 const User = require("./models/user");
 
-mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db", { autoIndex: true })
-.then(()=> User.init());
+mongoose
+  .connect("mongodb://127.0.0.1:27017/wtwr_db", { autoIndex: true })
+  .then(() => User.init());
 
 app.use(cors());
 app.use(express.json());
