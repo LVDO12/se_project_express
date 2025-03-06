@@ -6,7 +6,6 @@ const {
   NotFoundError,
   InternalServerError,
   ConflictError,
-  UnauthorizedError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -25,7 +24,7 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => {
       const userWithoutPassword = user.toObject();
       delete userWithoutPassword.password;
-      res.send({ data: userWithoutPassword });
+      res.status(201).send({ data: userWithoutPassword });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -65,8 +64,9 @@ module.exports.loginUser = (req, res, next) => {
       });
       res.send({ token });
     })
-    .catch(() => {
-      next(new UnauthorizedError("Incorrect email or password"));
+    .catch((err) => {
+      console.log(err);
+      next(err);
     });
 };
 
