@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const auth = require("./middlewares/auth");
 
 const { PORT = 3001 } = process.env;
 
