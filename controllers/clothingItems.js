@@ -3,7 +3,7 @@ const {
   BadRequestError,
   NotFoundError,
   InternalServerError,
-  UnauthorizedError,
+  ForbiddenError,
 } = require("../utils/errors");
 
 module.exports.getItems = (req, res, next) => {
@@ -36,7 +36,7 @@ module.exports.deleteItemById = (req, res, next) => {
     .then((clothingItem) => {
       if (clothingItem.owner.toString() !== userId) {
         return next(
-          new UnauthorizedError(
+          new ForbiddenError(
             "You do not have permission to delete this item."
           )
         );

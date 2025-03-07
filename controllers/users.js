@@ -10,12 +10,6 @@ const {
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-module.exports.getUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => next(new InternalServerError(err.message)));
-};
-
 module.exports.createUser = (req, res, next) => {
   const { name, email, password, avatar } = req.body;
 
