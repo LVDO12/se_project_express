@@ -5,9 +5,16 @@ npm-debug.log*
 
 # Dependency directory
 node_modules
+/build
+/dist
 
 # Optional npm cache directory
 .npm
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # System files and IDE settings folders
 .DS_Store
