@@ -2,14 +2,27 @@ const ClothingItem = require("../models/clothingItem");
 const {
   BadRequestError,
   NotFoundError,
-  InternalServerError,
   ForbiddenError,
 } = require("../utils/errors");
+
+const handleItemError = (err, next) => {
+  if (err.name === "ValidationError") {
+    return next(new BadRequestError("Invalid data."));
+  }
+  if (err.name === "CastError") {
+    return next(new BadRequestError("Invalid ID."));
+  }
+  if (err instanceof NotFoundError || err instanceof ForbiddenError) {
+    return next(err);
+  }
+
+  return next(err);
+};
 
 module.exports.getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((clothingItems) => res.send({ data: clothingItems }))
-    .catch((err) => next(new InternalServerError(err.message)));
+    .catch((err) => handleItemError(err, next));
 };
 
 module.exports.createItem = (req, res, next) => {
@@ -20,10 +33,10 @@ module.exports.createItem = (req, res, next) => {
     .then((clothingItem) => res.send({ data: clothingItem }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new BadRequestError("Invalid Data."));
-      } else {
-        next(new InternalServerError(err.message));
+        return next(new BadRequestError("Invalid data."));
       }
+
+      return handleItemError(err, next);
     });
 };
 
@@ -44,16 +57,17 @@ module.exports.deleteItemById = (req, res, next) => {
 
       return ClothingItem.findByIdAndDelete(itemId)
         .then((deletedItem) => res.send({ data: deletedItem }))
-        .catch((err) => next(new InternalServerError(err.message)));
+        .catch((err) => handleItemError(err, next));
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID."));
-      } else if (err instanceof NotFoundError) {
-        next(err);
-      } else {
-        next(new InternalServerError(err.message));
+        return next(new BadRequestError("Invalid ID."));
       }
+      if (err instanceof NotFoundError) {
+        return next(err);
+      }
+
+      return handleItemError(err, next);
     });
 };
 
@@ -65,15 +79,7 @@ module.exports.likeItem = (req, res, next) =>
   )
     .orFail(() => new NotFoundError("Item not found."))
     .then((item) => res.send({ data: item }))
-    .catch((err) => {
-      if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID."));
-      } else if (err instanceof NotFoundError) {
-        next(err);
-      } else {
-        next(new InternalServerError(err.message));
-      }
-    });
+    .catch((err) => handleItemError(err, next));
 
 module.exports.disLikeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
@@ -83,12 +89,4 @@ module.exports.disLikeItem = (req, res, next) =>
   )
     .orFail(() => new NotFoundError("Item not found."))
     .then((item) => res.send({ data: item }))
-    .catch((err) => {
-      if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID."));
-      } else if (err instanceof NotFoundError) {
-        next(err);
-      } else {
-        next(new InternalServerError(err.message));
-      }
-    });
+    .catch((err) => handleItemError(err, next));

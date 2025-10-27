@@ -1,13 +1,18 @@
+required("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const {errors} = require('celebrate');
+const{ requestLogger, errorLogger } = require("./middlewares/logger");
 
 const { PORT = 3001 } = process.env;
 
 const app = express();
 
-const { NOT_FOUND, DEFAULT } = require("./utils/status");
 const User = require("./models/user");
+const errorHandler = require("./middlewares/error-handler");
+const { NotFoundError } = require("./utils/errors");
+
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", { autoIndex: true })
@@ -16,19 +21,17 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
+app.use(requestLogger);
+
 app.use("/", require("./routes/index"));
 
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Resource not found" });
+app.use((req, res, next) => {
+  next(new NotFoundError("Requested resource not found"));
 });
 
-app.use((err, req, res, next) => {
-  const { statusCode = DEFAULT, message } = err;
-  res.status(statusCode).send({
-    message:
-      statusCode === DEFAULT ? "An error has occurred on the server." : message,
-  });
-  next();
-});
+app.use(errorLogger);
+app.use(errors());
+
+app.use(errorHandler);
 
 app.listen(PORT);

@@ -4,11 +4,27 @@ const User = require("../models/user");
 const {
   BadRequestError,
   NotFoundError,
-  InternalServerError,
   ConflictError,
   UnauthorizedError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+
+const handleUserError = (err, next) => {
+  if (err.name === "ValidationError") {
+    return next(new BadRequestError("Invalid data."));
+  }
+  if (err.name === "CastError") {
+    return next(new BadRequestError("Invalid ID."));
+  }
+  if (err.code === 11000) {
+    return next(new ConflictError("Email already exists."));
+  }
+  if (err instanceof NotFoundError || err instanceof UnauthorizedError) {
+    return next(err);
+  }
+
+  return next(err);
+};
 
 module.exports.createUser = (req, res, next) => {
   const { name, email, password, avatar } = req.body;
@@ -23,12 +39,10 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new BadRequestError("Invalid Name."));
-      } else if (err.code === 11000) {
-        next(new ConflictError("Email already exists."));
-      } else {
-        next(new InternalServerError(err.message));
+        return next(new BadRequestError("Invalid data."));
       }
+
+      return handleUserError(err, next);
     });
 };
 
@@ -38,15 +52,7 @@ module.exports.getCurrentUser = (req, res, next) => {
   User.findById(userId)
     .orFail(() => new NotFoundError("User not found."))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID."));
-      } else if (err instanceof NotFoundError) {
-        next(err);
-      } else {
-        next(new InternalServerError(err.message));
-      }
-    });
+    .catch((err) => handleUserError(err, next));
 };
 
 module.exports.loginUser = (req, res, next) => {
@@ -82,13 +88,5 @@ module.exports.updateProfile = (req, res, next) => {
   )
     .orFail(() => new NotFoundError("User not found."))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        next(new BadRequestError("Invalid data."));
-      } else if (err instanceof NotFoundError) {
-        next(err);
-      } else {
-        next(new InternalServerError(err.message));
-      }
-    });
+    .catch((err) => handleUserError(err, next));
 };
